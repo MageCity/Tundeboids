@@ -1,21 +1,30 @@
 // Size of canvas. These get updated to fill the whole browser.
-let width = 150;
-let height = 150;
+let width = 600;
+let height = 600;
 
-const numBoids = 100;
-const visualRange = 75;
+const numBoids = 10;
+const visualRange = 60;
+const speedLimit = 3;
+const minFrequency = 32;
+const maxFrequency = 800;
+const minVolume = -30;
+const maxVolume = 0;
 
 var boids = [];
 
 function initBoids() {
   for (var i = 0; i < numBoids; i += 1) {
-    boids[boids.length] = {
+    boids[i] = {
       x: Math.random() * width,
       y: Math.random() * height,
       dx: Math.random() * 10 - 5,
       dy: Math.random() * 10 - 5,
       history: [],
+      osc: new Tone.Oscillator(440, "sine1").toMaster()
     };
+    boids[i].osc.frequency.value = calculateFrequency(boids[i].x)
+    boids[i].osc.volume.value = calculateVolume(boids[i].y)
+    boids[i].osc.start()
   }
 }
 
@@ -140,7 +149,6 @@ function matchVelocity(boid) {
 // Speed will naturally vary in flocking behavior, but real animals can't go
 // arbitrarily fast.
 function limitSpeed(boid) {
-  const speedLimit = 15;
 
   const speed = Math.sqrt(boid.dx * boid.dx + boid.dy * boid.dy);
   if (speed > speedLimit) {
@@ -176,6 +184,11 @@ function drawBoid(ctx, boid) {
   }
 }
 
+function updateTone(boid) {
+  boid.osc.frequency.value = calculateFrequency(boid.x)
+  boid.osc.volume.value = calculateVolume(boid.y)
+}
+
 // Main animation loop
 function animationLoop() {
   // Update each boid
@@ -199,13 +212,27 @@ function animationLoop() {
   ctx.clearRect(0, 0, width, height);
   for (let boid of boids) {
     drawBoid(ctx, boid);
+    console.log(boid.osc.frequency)
+    updateTone(boid);
   }
 
   // Schedule the next frame
   window.requestAnimationFrame(animationLoop);
 }
 
-window.onload = () => {
+function calculateFrequency(x) {
+  return x * (maxFrequency - minFrequency) / width + minFrequency;
+}
+
+function calculateVolume(x) {
+  return x * (maxVolume - minVolume) / height + minVolume;
+}
+
+async function start() {
+  await Tone.start()
+  if (boids.length > 0) {
+    boids.forEach(boid => boid.osc.stop())
+  }
   // Make sure the canvas always fills the whole window
   window.addEventListener("resize", sizeCanvas, false);
   sizeCanvas();
@@ -216,3 +243,7 @@ window.onload = () => {
   // Schedule the main animation loop
   window.requestAnimationFrame(animationLoop);
 };
+
+function freeze() {
+
+}
