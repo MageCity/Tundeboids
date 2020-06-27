@@ -1,6 +1,6 @@
 # Boids algorithm demonstration
 
-Copyright 2020 Ben Eater
+Based on Ben Eater's earlier boids code.
 
 This code is [MIT licensed](http://en.wikipedia.org/wiki/MIT_License).
 
