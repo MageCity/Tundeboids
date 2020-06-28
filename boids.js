@@ -7,8 +7,8 @@ const visualRange = 50;
 const speedLimit = 3;
 const minFrequency = 64;
 const maxFrequency = 1400;
-const minVolume = -40;
-const maxVolume = 0;
+const minVolume = -45;
+const maxVolume = -10;
 
 var boids = [];
 
