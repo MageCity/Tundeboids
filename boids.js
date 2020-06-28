@@ -5,10 +5,13 @@ let height = 600;
 const numBoids = 15;
 const visualRange = 50;
 const speedLimit = 3;
-const minFrequency = 64;
-const maxFrequency = 1400;
+
+const minNote = -45;
+const maxNote = 24;
 const minVolume = -45;
 const maxVolume = -10;
+
+let isChromatic = false;
 
 var boids = [];
 
@@ -221,7 +224,11 @@ function animationLoop() {
 }
 
 function calculateFrequency(x) {
-  return minFrequency * Math.pow(2, ((x/width) * (Math.log2(maxFrequency/minFrequency))))
+  pitchDiff = x * (maxNote - minNote) / width + minNote;
+  if (isChromatic) {
+    pitchDiff = Math.round(pitchDiff)
+  }
+  return 440 * Math.pow(1.059463094359, pitchDiff)
 }
 
 function calculateVolume(x) {
@@ -258,4 +265,8 @@ function unpause() {
   boids.forEach(boid => boid.osc.start())
   animId = window.requestAnimationFrame(animationLoop)
   isPaused = false
+}
+
+function toggleChromatic() {
+  isChromatic = !isChromatic
 }
