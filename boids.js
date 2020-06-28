@@ -2,12 +2,12 @@
 let width = 600;
 let height = 600;
 
-const numBoids = 10;
-const visualRange = 60;
+const numBoids = 15;
+const visualRange = 50;
 const speedLimit = 3;
-const minFrequency = 32;
-const maxFrequency = 800;
-const minVolume = -30;
+const minFrequency = 64;
+const maxFrequency = 1400;
+const minVolume = -40;
 const maxVolume = 0;
 
 var boids = [];
@@ -186,6 +186,7 @@ function drawBoid(ctx, boid) {
 
 function updateTone(boid) {
   boid.osc.frequency.value = calculateFrequency(boid.x)
+  console.log(boid.osc.frequency.value)
   boid.osc.volume.value = calculateVolume(boid.y)
 }
 
@@ -212,7 +213,6 @@ function animationLoop() {
   ctx.clearRect(0, 0, width, height);
   for (let boid of boids) {
     drawBoid(ctx, boid);
-    console.log(boid.osc.frequency)
     updateTone(boid);
   }
 
@@ -221,7 +221,7 @@ function animationLoop() {
 }
 
 function calculateFrequency(x) {
-  return x * (maxFrequency - minFrequency) / width + minFrequency;
+  return minFrequency * Math.pow(2, ((x/width) * (Math.log2(maxFrequency/minFrequency))))
 }
 
 function calculateVolume(x) {
