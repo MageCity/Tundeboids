@@ -217,7 +217,7 @@ function animationLoop() {
   }
 
   // Schedule the next frame
-  window.requestAnimationFrame(animationLoop);
+  animId = window.requestAnimationFrame(animationLoop);
 }
 
 function calculateFrequency(x) {
@@ -241,9 +241,21 @@ async function start() {
   initBoids();
 
   // Schedule the main animation loop
-  window.requestAnimationFrame(animationLoop);
+  animId = window.requestAnimationFrame(animationLoop);
 };
 
-function freeze() {
+isPaused = false
+function pause() {
+  if(isPaused) {
+    return unpause()
+  }
+  boids.forEach(boid => boid.osc.stop())
+  window.cancelAnimationFrame(animId)
+  isPaused = true
+}
 
+function unpause() {
+  boids.forEach(boid => boid.osc.start())
+  animId = window.requestAnimationFrame(animationLoop)
+  isPaused = false
 }
