@@ -16,7 +16,12 @@
   <body>
     <button type="button" onclick="start()">Start!</button>
     <button type="button" onclick="pause()">Pause!</button>
-    <button type="button" onclick="toggleChromatic()">Chromatic?</button>
+    <select onchange="changeMode(this.value)">
+      <option value="smooth">Smooth</option>
+      <option value="chromatic">Chromatic</option>
+      <option value="diatonic">Diatonic</option>
+      <option value="pentatonic">Pentatonic</option>
+    </select>
     <canvas id="boids" width="150" height="150"></canvas>
   </body>
 </html>

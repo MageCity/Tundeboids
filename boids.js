@@ -11,8 +11,7 @@ const maxNote = 24;
 const minVolume = -45;
 const maxVolume = -10;
 
-let isChromatic = false;
-
+let mode = "smooth"
 var boids = [];
 
 function initBoids() {
@@ -225,8 +224,20 @@ function animationLoop() {
 
 function calculateFrequency(x) {
   pitchDiff = x * (maxNote - minNote) / width + minNote;
-  if (isChromatic) {
+  if (mode==="chromatic") {
     pitchDiff = Math.round(pitchDiff)
+  }
+  if (mode==="diatonic") {
+    pitchDiff = Math.round(pitchDiff)
+    while(![0, 2, 4, 5, 7, 9, 11].includes(pitchDiff%12)) {
+      pitchDiff++
+    }
+  }
+  if (mode==="pentatonic") {
+    pitchDiff = Math.round(pitchDiff)
+    while(![0, 2, 4, 7, 9].includes(pitchDiff%12)) {
+      pitchDiff++
+    }
   }
   return 440 * Math.pow(1.059463094359, pitchDiff)
 }
@@ -240,6 +251,7 @@ async function start() {
   if (boids.length > 0) {
     boids.forEach(boid => boid.osc.stop())
   }
+  isPaused = false;
   // Make sure the canvas always fills the whole window
   window.addEventListener("resize", sizeCanvas, false);
   sizeCanvas();
@@ -267,6 +279,6 @@ function unpause() {
   isPaused = false
 }
 
-function toggleChromatic() {
-  isChromatic = !isChromatic
+function changeMode(newMode) {
+  mode = newMode
 }
