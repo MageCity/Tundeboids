@@ -6,7 +6,7 @@ const numBoids = 15;
 const visualRange = 50;
 const speedLimit = 3;
 
-const minNote = -33;
+const minNote = -38;
 const maxNote = 24;
 const minVolume = -45;
 const maxVolume = -10;
@@ -226,20 +226,23 @@ function animationLoop() {
   animId = window.requestAnimationFrame(animationLoop);
 }
 
+modes = {
+  "diatonic": [0, 2, 4, 5, 7, 9, 11],
+  "pentatonic": [0, 2, 4, 7, 9],
+  "wholetone": [0, 2, 4, 6, 8, 10],
+  "diminished": [0, 3, 6, 9],
+  "augmented": [0, 4, 8],
+  "major": [0, 4, 7],
+  "minor": [0, 3, 7],
+}
 function calculateFrequency(x) {
   pitchDiff = x * (maxNote - minNote) / width + minNote;
   if (mode==="chromatic") {
     pitchDiff = Math.round(pitchDiff)
   }
-  if (mode==="diatonic") {
+  else if (mode !== "smooth") {
     pitchDiff = Math.round(pitchDiff)
-    while(![0, 2, 4, 5, 7, 9, 11].includes(mod(pitchDiff, 12))) {
-      pitchDiff++
-    }
-  }
-  if (mode==="pentatonic") {
-    pitchDiff = Math.round(pitchDiff)
-    while(![0, 2, 4, 7, 9].includes(mod(pitchDiff, 12))) {
+    while(!modes[mode].includes(mod(pitchDiff, 12))) {
       pitchDiff++
     }
   }
