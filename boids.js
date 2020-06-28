@@ -6,13 +6,17 @@ const numBoids = 15;
 const visualRange = 50;
 const speedLimit = 3;
 
-const minNote = -45;
+const minNote = -33;
 const maxNote = 24;
 const minVolume = -45;
 const maxVolume = -10;
 
 let mode = "smooth"
 var boids = [];
+
+function mod(x, n) {
+    return ((x%n)+n)%n;
+};
 
 function initBoids() {
   for (var i = 0; i < numBoids; i += 1) {
@@ -229,13 +233,13 @@ function calculateFrequency(x) {
   }
   if (mode==="diatonic") {
     pitchDiff = Math.round(pitchDiff)
-    while(![0, 2, 4, 5, 7, 9, 11].includes(pitchDiff%12)) {
+    while(![0, 2, 4, 5, 7, 9, 11].includes(mod(pitchDiff, 12))) {
       pitchDiff++
     }
   }
   if (mode==="pentatonic") {
     pitchDiff = Math.round(pitchDiff)
-    while(![0, 2, 4, 7, 9].includes(pitchDiff%12)) {
+    while(![0, 2, 4, 7, 9].includes(mod(pitchDiff, 12))) {
       pitchDiff++
     }
   }
