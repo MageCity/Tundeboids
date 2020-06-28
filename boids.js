@@ -2,16 +2,21 @@
 let width = 600;
 let height = 600;
 
+// Boids variables:
 const numBoids = 15;
-const visualRange = 50;
+let coherence = 0.005; // 0 to .01
+let separation = 0.05; // 0 to .1
+let alignment = 0.05; // 0 to .1
+let visualRange = 50; // 0 to 200
 const speedLimit = 3;
 
+// Music variables
 const minNote = -38;
 const maxNote = 24;
 const minVolume = -45;
-const maxVolume = -10;
+const maxVolume = -15;
 
-let mode = "smooth"
+let mode = "pentatonic"
 var boids = [];
 
 function mod(x, n) {
@@ -64,8 +69,8 @@ function sizeCanvas() {
 // Constrain a boid to within the window. If it gets too close to an edge,
 // nudge it back in and reverse its direction.
 function keepWithinBounds(boid) {
-  const margin = 200;
-  const turnFactor = 1;
+  const margin = 100;
+  const turnFactor = .5;
 
   if (boid.x < margin) {
     boid.dx += turnFactor;
@@ -84,7 +89,6 @@ function keepWithinBounds(boid) {
 // Find the center of mass of the other boids and adjust velocity slightly to
 // point towards the center of mass.
 function flyTowardsCenter(boid) {
-  const centeringFactor = 0.005; // adjust velocity by this %
 
   let centerX = 0;
   let centerY = 0;
@@ -102,15 +106,14 @@ function flyTowardsCenter(boid) {
     centerX = centerX / numNeighbors;
     centerY = centerY / numNeighbors;
 
-    boid.dx += (centerX - boid.x) * centeringFactor;
-    boid.dy += (centerY - boid.y) * centeringFactor;
+    boid.dx += (centerX - boid.x) * coherence;
+    boid.dy += (centerY - boid.y) * coherence;
   }
 }
 
 // Move away from other boids that are too close to avoid colliding
 function avoidOthers(boid) {
   const minDistance = 20; // The distance to stay away from other boids
-  const avoidFactor = 0.05; // Adjust velocity by this %
   let moveX = 0;
   let moveY = 0;
   for (let otherBoid of boids) {
@@ -122,15 +125,13 @@ function avoidOthers(boid) {
     }
   }
 
-  boid.dx += moveX * avoidFactor;
-  boid.dy += moveY * avoidFactor;
+  boid.dx += moveX * separation;
+  boid.dy += moveY * separation;
 }
 
 // Find the average velocity (speed and direction) of the other boids and
 // adjust velocity slightly to match.
 function matchVelocity(boid) {
-  const matchingFactor = 0.05; // Adjust by this % of average velocity
-
   let avgDX = 0;
   let avgDY = 0;
   let numNeighbors = 0;
@@ -147,8 +148,8 @@ function matchVelocity(boid) {
     avgDX = avgDX / numNeighbors;
     avgDY = avgDY / numNeighbors;
 
-    boid.dx += (avgDX - boid.dx) * matchingFactor;
-    boid.dy += (avgDY - boid.dy) * matchingFactor;
+    boid.dx += (avgDX - boid.dx) * alignment;
+    boid.dy += (avgDY - boid.dy) * alignment;
   }
 }
 
@@ -170,7 +171,7 @@ function drawBoid(ctx, boid) {
   ctx.translate(boid.x, boid.y);
   ctx.rotate(angle);
   ctx.translate(-boid.x, -boid.y);
-  ctx.fillStyle = "#558cf4";
+  ctx.fillStyle = "#5fb";
   ctx.beginPath();
   ctx.moveTo(boid.x, boid.y);
   ctx.lineTo(boid.x - 15, boid.y + 5);
@@ -192,7 +193,6 @@ function drawBoid(ctx, boid) {
 
 function updateTone(boid) {
   boid.osc.frequency.value = calculateFrequency(boid.x)
-  console.log(boid.osc.frequency.value)
   boid.osc.volume.value = calculateVolume(boid.y)
 }
 
@@ -257,6 +257,7 @@ async function start() {
   await Tone.start()
   if (boids.length > 0) {
     boids.forEach(boid => boid.osc.stop())
+    window.cancelAnimationFrame(animId)
   }
   isPaused = false;
   // Make sure the canvas always fills the whole window
@@ -284,8 +285,4 @@ function unpause() {
   boids.forEach(boid => boid.osc.start())
   animId = window.requestAnimationFrame(animationLoop)
   isPaused = false
-}
-
-function changeMode(newMode) {
-  mode = newMode
 }

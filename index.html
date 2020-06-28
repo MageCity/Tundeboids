@@ -3,12 +3,14 @@
   <head>
     <meta charset="utf-8"/>
     <title>Tundeboids!</title>
+    <link rel="icon" href="/favicon.png" sizes="32x32">
     <script src="https://unpkg.com/tone"></script>
     <script src="./boids.js"></script>
     <style type="text/css">
       body {
         margin: 0;
-        background: #282c34;
+        background: #111;
+        color: #fff;
         overflow: hidden;
       }
     </style>
@@ -16,17 +18,27 @@
   <body>
     <button type="button" onclick="start()">Start!</button>
     <button type="button" onclick="pause()">Pause!</button>
-    <select onchange="changeMode(this.value)">
+    <select onchange="mode = this.value">
       <option value="smooth">Smooth</option>
       <option value="chromatic">Chromatic</option>
       <option value="diatonic">Diatonic</option>
-      <option value="pentatonic">Pentatonic</option>
+      <option value="pentatonic" selected="selected">Pentatonic</option>
       <option value="wholetone">Whole tone</option>
       <option value="diminished">Diminished 7th chord</option>
       <option value="augmented">Augmented chord</option>
       <option value="major">Major chord</option>
       <option value="minor">Minor chord</option>
     </select>
+    <div class="boidControlPanel">
+      Coherence
+      <input type="range" min="0" max="0.01" value="0.005" step="0.001" onchange="coherence = this.value"/>
+      Separation
+      <input type="range" min="0" max="0.1" value="0.05" step="0.01" onchange="separation = this.value"/>
+      Alignment
+      <input type="range" min="0" max="0.1" value="0.05" step="0.01" onchange="alignment = this.value"/>
+      Visual Range
+      <input type="range" min="0" max="200" value="50" onchange="visualRange = this.value"/>
+    </div>
     <canvas id="boids" width="150" height="150"></canvas>
   </body>
 </html>
