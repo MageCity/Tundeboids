@@ -11,12 +11,15 @@ let visualRange = 50; // 0 to 200
 const speedLimit = 3;
 
 // Music variables
-const minNote = -38;
+const minNote = -35;
 const maxNote = 24;
 const minVolume = -45;
 const maxVolume = -15;
+const minDuration = 0;
+const maxDuration = 5;
 
 let mode = "pentatonic"
+let yAxis = "volume"
 var boids = [];
 
 function mod(x, n) {
@@ -34,8 +37,7 @@ function initBoids() {
       osc: new Tone.Oscillator(440, "sine1").toMaster()
     };
     boids[i].osc.frequency.value = calculateFrequency(boids[i].x)
-    boids[i].osc.volume.value = calculateVolume(boids[i].y)
-    boids[i].osc.start()
+    boids[i].osc.volume.value = -20
   }
 }
 
@@ -192,8 +194,21 @@ function drawBoid(ctx, boid) {
 }
 
 function updateTone(boid) {
-  boid.osc.frequency.value = calculateFrequency(boid.x)
-  boid.osc.volume.value = calculateVolume(boid.y)
+  if (yAxis === "duration") {
+    if (boid.osc.state === "stopped") {
+      boid.osc.frequency.value = calculateFrequency(boid.x)
+      duration = calculateDuration(boid.y)
+      boid.osc.volume.value = -20
+      boid.osc.start()
+      boid.osc.stop('+'+duration)
+    }
+  } else {
+    if (boid.osc.state === "stopped") {
+      boid.osc.start()
+    }
+    boid.osc.frequency.value = calculateFrequency(boid.x)
+    boid.osc.volume.value = calculateVolume(boid.y)
+  }
 }
 
 // Main animation loop
@@ -227,6 +242,7 @@ function animationLoop() {
 }
 
 modes = {
+  "chromatic": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
   "diatonic": [0, 2, 4, 5, 7, 9, 11],
   "pentatonic": [0, 2, 4, 7, 9],
   "wholetone": [0, 2, 4, 6, 8, 10],
@@ -234,6 +250,19 @@ modes = {
   "augmented": [0, 4, 8],
   "major": [0, 4, 7],
   "minor": [0, 3, 7],
+  "semimajor": [0, 3.5, 7]
+}
+
+function findRoundedIndex(precise, array) {
+  index = 0
+  min = Number.MAX_VALUE
+  for (i = 0; i < array.length; i++) {
+    if (Math.abs(array[i] - precise) < min) {
+      min = Math.abs(array[i] - precise)
+      index = i
+    }
+  }
+  return index
 }
 function calculateFrequency(x) {
   pitchDiff = x * (maxNote - minNote) / width + minNote;
@@ -241,16 +270,18 @@ function calculateFrequency(x) {
     pitchDiff = Math.round(pitchDiff)
   }
   else if (mode !== "smooth") {
-    pitchDiff = Math.round(pitchDiff)
-    while(!modes[mode].includes(mod(pitchDiff, 12))) {
-      pitchDiff++
-    }
+    pitchDiff = Math.floor(pitchDiff/12)*12 + modes[mode][findRoundedIndex(mod(pitchDiff, 12), modes[mode])]
   }
+  console.log(pitchDiff)
   return 440 * Math.pow(1.059463094359, pitchDiff)
 }
 
 function calculateVolume(x) {
   return x * (maxVolume - minVolume) / height + minVolume;
+}
+
+function calculateDuration(x) {
+  return 4/(Math.pow(2, Math.round(x * (maxDuration - minDuration)/height + minDuration)));
 }
 
 async function start() {
@@ -282,7 +313,22 @@ function pause() {
 }
 
 function unpause() {
-  boids.forEach(boid => boid.osc.start())
+  if (yAxis === "volume") {
+    boids.forEach(boid => boid.osc.start())
+  }
   animId = window.requestAnimationFrame(animationLoop)
   isPaused = false
+}
+
+function switchAxis() {
+  if(yAxis === "volume") {
+    boids.forEach(boid => boid.osc.stop())
+    yAxis = "duration"
+  } else {
+    boids.forEach(boid => boid.osc.stop())
+    if (!isPaused) {
+      boids.forEach(boid => boid.osc.start())
+    }
+    yAxis = "volume"
+  }
 }
