@@ -18,7 +18,7 @@
   <body>
     <button type="button" onclick="start()">Start!</button>
     <button type="button" onclick="pause()">Pause!</button>
-    <select onchange="mode = this.value">
+    <select id="modepicker" onchange="modeToPreset(this.value)">
       <option value="smooth">Smooth</option>
       <option value="chromatic">Chromatic</option>
       <option value="diatonic">Diatonic</option>
@@ -28,8 +28,9 @@
       <option value="augmented">Augmented chord</option>
       <option value="major">Major chord</option>
       <option value="minor">Minor chord</option>
-      <option value="semimajor">Semimajor chord (quartertone third)</option>
+      <option value="custom">Use Custom Mode</option>
     </select>
+    <input type="text" id="custommode" value="0, 3.5, 7" onchange="customModeChange(this.value)">
     <button type="button" onclick="switchAxis();this.innerText='Y-axis: '+yAxis;">Y-axis: volume</button>
     <div class="boidControlPanel">
       Coherence

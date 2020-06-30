@@ -18,7 +18,19 @@ const maxVolume = -15;
 const minDuration = 0;
 const maxDuration = 5;
 
-let mode = "pentatonic"
+modes = {
+  "smooth": [],
+  "chromatic": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  "diatonic": [0, 2, 4, 5, 7, 9, 11],
+  "pentatonic": [0, 2, 4, 7, 9],
+  "wholetone": [0, 2, 4, 6, 8, 10],
+  "diminished": [0, 3, 6, 9],
+  "augmented": [0, 4, 8],
+  "major": [0, 4, 7],
+  "minor": [0, 3, 7],
+}
+
+let mode = modes["pentatonic"]
 let yAxis = "volume"
 var boids = [];
 
@@ -241,18 +253,6 @@ function animationLoop() {
   animId = window.requestAnimationFrame(animationLoop);
 }
 
-modes = {
-  "chromatic": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-  "diatonic": [0, 2, 4, 5, 7, 9, 11],
-  "pentatonic": [0, 2, 4, 7, 9],
-  "wholetone": [0, 2, 4, 6, 8, 10],
-  "diminished": [0, 3, 6, 9],
-  "augmented": [0, 4, 8],
-  "major": [0, 4, 7],
-  "minor": [0, 3, 7],
-  "semimajor": [0, 3.5, 7]
-}
-
 function findRoundedIndex(precise, array) {
   index = 0
   min = Number.MAX_VALUE
@@ -266,13 +266,9 @@ function findRoundedIndex(precise, array) {
 }
 function calculateFrequency(x) {
   pitchDiff = x * (maxNote - minNote) / width + minNote;
-  if (mode==="chromatic") {
-    pitchDiff = Math.round(pitchDiff)
+  if (mode.length > 0) {
+    pitchDiff = Math.floor(pitchDiff/12)*12 + mode[findRoundedIndex(mod(pitchDiff, 12), mode)]
   }
-  else if (mode !== "smooth") {
-    pitchDiff = Math.floor(pitchDiff/12)*12 + modes[mode][findRoundedIndex(mod(pitchDiff, 12), modes[mode])]
-  }
-  console.log(pitchDiff)
   return 440 * Math.pow(1.059463094359, pitchDiff)
 }
 
@@ -330,5 +326,20 @@ function switchAxis() {
       boids.forEach(boid => boid.osc.start())
     }
     yAxis = "volume"
+  }
+}
+
+function modeToPreset(preset) {
+  if(preset === "custom") {
+    mode = document.getElementById('custommode').value.split(',').map(x => parseFloat(x, 10))
+
+  } else {
+    mode = modes[preset]
+  }
+}
+
+function customModeChange(value) {
+  if (document.getElementById('modepicker').value === "custom") {
+    modeToPreset("custom")
   }
 }
