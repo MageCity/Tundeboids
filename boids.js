@@ -17,7 +17,11 @@ const minVolume = -45;
 const maxVolume = -15;
 const minDuration = 0;
 const maxDuration = 5;
-const SHINE_CONSTANT = 30;
+const SHINE_CONSTANT = 15;
+
+// Interface variables
+const DARK_COLOR = "#063"
+const BRIGHT_COLOR = "#5fb"
 
 modes = {
   "smooth": [],
@@ -179,6 +183,31 @@ function limitSpeed(boid) {
   }
 }
 
+function generateUnmoddedMode(mode) {
+  newMode = []
+  for (let i= Math.floor(minNote/12); i <= Math.ceil(maxNote/12); i++) {
+    newMode = newMode.concat(mode.map(x => x + i*12))
+  }
+  return newMode.filter(x => x >= minNote && x <= maxNote)
+}
+
+function labelAxis(ctx) {
+  cleanMode = generateUnmoddedMode(mode)
+  for (note of generateUnmoddedMode(mode)) {
+    x = width*(note - minNote)/(maxNote-minNote)
+    ctx.beginPath()
+    ctx.arc(x, 14, 13, 0, 3*Math.PI, false)
+    ctx.fillStyle = DARK_COLOR
+    ctx.fill()
+    ctx.strokeStyle = BRIGHT_COLOR
+    ctx.stroke()
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "white";
+    ctx.textAlign = "center";
+    ctx.fillText(getNoteName(note), x, 20)
+  }
+}
+
 const DRAW_TRAIL = false;
 
 function drawBoid(ctx, boid) {
@@ -186,8 +215,8 @@ function drawBoid(ctx, boid) {
   ctx.translate(boid.x, boid.y);
   ctx.rotate(angle);
   ctx.translate(-boid.x, -boid.y);
-  ctx.fillStyle = shiftColor("#063", boid.shineTimer/4);
-  ctx.strokeStyle = "#5fb";
+  ctx.fillStyle = shiftColor(DARK_COLOR, boid.shineTimer);
+  ctx.strokeStyle = BRIGHT_COLOR;
   boid.shineTimer = Math.max(boid.shineTimer - 1, 0)
   ctx.beginPath();
   ctx.moveTo(boid.x, boid.y);
@@ -240,8 +269,8 @@ function animationLoop() {
     flyTowardsCenter(boid);
     avoidOthers(boid);
     matchVelocity(boid);
-    limitSpeed(boid);
     keepWithinBounds(boid);
+    limitSpeed(boid);
 
     // Update the position based on the current velocity
     boid.x += boid.dx;
@@ -257,7 +286,7 @@ function animationLoop() {
     drawBoid(ctx, boid);
     updateTone(boid);
   }
-
+  labelAxis(ctx);
   // Schedule the next frame
   animId = window.requestAnimationFrame(animationLoop);
 }
@@ -273,6 +302,7 @@ function findRoundedIndex(precise, array) {
   }
   return index
 }
+
 function calculateFrequency(x) {
   pitchDiff = x * (maxNote - minNote) / width + minNote;
   if (mode.length > 0) {
@@ -370,4 +400,20 @@ function shiftColor(hex, lum) {
   }
 
   return rgb;
+}
+
+const names = ["A", "A♯", "B", "C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯"]
+// Num is "half steps from A"
+function getNoteName(num) {
+  noteNum = mod(num, 12)
+  if (noteNum % 1 != 0) {
+    if (noteNum % 1 == 0.5) {
+      if (names[Math.floor(noteNum)].includes("♯")) {
+        return names[Math.ceil(noteNum)] + "𝄳"
+      }
+      return names[Math.floor(noteNum)] + "𝄲"
+    }
+    return "?" //TODO?
+  }
+  return names[noteNum]
 }
