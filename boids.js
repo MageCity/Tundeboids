@@ -17,6 +17,7 @@ const minVolume = -45;
 const maxVolume = -15;
 const minDuration = 0;
 const maxDuration = 5;
+const SHINE_CONSTANT = 30;
 
 modes = {
   "smooth": [],
@@ -185,13 +186,16 @@ function drawBoid(ctx, boid) {
   ctx.translate(boid.x, boid.y);
   ctx.rotate(angle);
   ctx.translate(-boid.x, -boid.y);
-  ctx.fillStyle = "#5fb";
+  ctx.fillStyle = shiftColor("#063", boid.shineTimer/4);
+  ctx.strokeStyle = "#5fb";
+  boid.shineTimer = Math.max(boid.shineTimer - 1, 0)
   ctx.beginPath();
   ctx.moveTo(boid.x, boid.y);
   ctx.lineTo(boid.x - 15, boid.y + 5);
   ctx.lineTo(boid.x - 15, boid.y - 5);
   ctx.lineTo(boid.x, boid.y);
   ctx.fill();
+  ctx.stroke();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 
   if (DRAW_TRAIL) {
@@ -213,12 +217,17 @@ function updateTone(boid) {
       boid.osc.volume.value = -20
       boid.osc.start()
       boid.osc.stop('+'+duration)
+      boid.shineTimer = SHINE_CONSTANT
     }
   } else {
     if (boid.osc.state === "stopped") {
       boid.osc.start()
     }
-    boid.osc.frequency.value = calculateFrequency(boid.x)
+    newFrequency = calculateFrequency(boid.x)
+    if (newFrequency != boid.osc.frequency.value) {
+      boid.shineTimer = SHINE_CONSTANT
+      boid.osc.frequency.value = newFrequency
+    }
     boid.osc.volume.value = calculateVolume(boid.y)
   }
 }
@@ -342,4 +351,23 @@ function customModeChange(value) {
   if (document.getElementById('modepicker').value === "custom") {
     modeToPreset("custom")
   }
+}
+
+function shiftColor(hex, lum) {
+  // validate hex string
+  hex = String(hex).replace(/[^0-9a-f]/gi, '');
+  if (hex.length < 6) {
+    hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+  }
+  lum = lum || 0;
+
+  // convert to decimal and change luminosity
+  var rgb = "#", c, i;
+  for (i = 0; i < 3; i++) {
+    c = parseInt(hex.substr(i*2,2), 16);
+    c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+    rgb += ("00"+c).substr(c.length);
+  }
+
+  return rgb;
 }
