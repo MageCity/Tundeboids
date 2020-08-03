@@ -1,4 +1,4 @@
-# Boids algorithm demonstration
+# Boids algorithm musicified
 
 Based on Ben Eater's earlier boids code.
 
