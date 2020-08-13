@@ -193,18 +193,28 @@ function generateUnmoddedMode(mode) {
 
 function labelAxis(ctx) {
   cleanMode = generateUnmoddedMode(mode)
+  x = 0
   for (note of generateUnmoddedMode(mode)) {
+    prevX = x
     x = width*(note - minNote)/(maxNote-minNote)
     ctx.beginPath()
+    // Circle around the note names
     ctx.arc(x, 14, 13, 0, 3*Math.PI, false)
     ctx.fillStyle = DARK_COLOR
     ctx.fill()
     ctx.strokeStyle = BRIGHT_COLOR
     ctx.stroke()
+    // Write note name
     ctx.font = "16px Arial";
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
     ctx.fillText(getNoteName(note), x, 20)
+    // draw separator line
+    ctx.strokeStyle = DARK_COLOR
+    midX = (prevX + x) /2
+    ctx.moveTo(midX, 0)
+    ctx.lineTo(midX, height)
+    ctx.stroke()
   }
 }
 
@@ -291,22 +301,25 @@ function animationLoop() {
   animId = window.requestAnimationFrame(animationLoop);
 }
 
-function findRoundedIndex(precise, array) {
+function findRoundedValue(precise, array) {
   index = 0
   min = Number.MAX_VALUE
   for (i = 0; i < array.length; i++) {
     if (Math.abs(array[i] - precise) < min) {
       min = Math.abs(array[i] - precise)
-      index = i
+      value = array[i]
     }
   }
-  return index
+  if (Math.abs(array[0] + 12 - precise) < min) {
+    value = array[0] + 12
+  }
+  return value
 }
 
 function calculateFrequency(x) {
   pitchDiff = x * (maxNote - minNote) / width + minNote;
   if (mode.length > 0) {
-    pitchDiff = Math.floor(pitchDiff/12)*12 + mode[findRoundedIndex(mod(pitchDiff, 12), mode)]
+    pitchDiff = Math.floor(pitchDiff/12)*12 + findRoundedValue(mod(pitchDiff, 12), mode)
   }
   return 440 * Math.pow(1.059463094359, pitchDiff)
 }
